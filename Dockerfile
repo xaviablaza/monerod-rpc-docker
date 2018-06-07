@@ -1,9 +1,9 @@
 FROM ubuntu:16.04
-MAINTAINER Sreekanth G S <mail@sreekanth.in>
+LABEL maintainer="xlablaza@gmail.com"
 
 RUN apt-get update && apt-get install -y \
  git build-essential bsdmainutils libunbound-dev \
- libevent-dev libgtest-dev libboost-dev curl wget
+ libevent-dev libgtest-dev libboost-dev libpcsclite-dev curl wget
 
 WORKDIR /usr/local/monero
 
