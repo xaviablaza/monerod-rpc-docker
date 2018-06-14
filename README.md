@@ -1,29 +1,35 @@
-# monero-docker
-Docker Repo for Monerod.
+# monerod-rpc-docker
+Dockerfile for running monerod and its rpc client in one Docker container
 
 ## Usage Instructions
 
-**Mandatory Requirement**: Must use a local mount volume and config file.
+**Mandatory Requirement**: Must use a config file `monerod.conf`. You can mount a local volume if you'd like.
+
+Make sure to configure `supervisord.conf` with the startup instructions you'd like for both `monerod` and the rpc client.
 
 Build the image:
 ```
-docker build -t monerod .
+docker build -t monerod-rpc-docker .
 ```
 
-Run `monerod`:
+Run the container:
 ```
-sudo docker run -it --name=monero-docker \   
+sudo docker run -it --name=monerod-rpc-docker \   
 -v /opt/monero:/opt/monero \   
--p 18081:18081 monerod
+-p 18081:18081 monerod-rpc-docker
 ```
 
-## Setup using docker-compose
+Upon running the container, `monerod` will begin syncing (downloading the blockchain). However, the RPC client will fail because it will not be able to find a wallet file to open. To mitigate this, do:
 
-`docker run -it monero-docker_rpc:latest`
+```
+docker exec -it monero-rpc-docker ./monero-wallet-cli [--testnet]
+```
 
-**Config file is read from**: `/opt/monero/monerod.conf`
+When creating the wallet file, you can specify a path to the wallet file (e.g. `/opt/monero/testnet-wallet`). This is why it is recommended to use a local volume so you may get the wallet file for use in other applications or secure it in an airgapped computer, etc.
 
 ## Storing of Data
+
+**Config file is read from**: `/opt/monero/monerod.conf`
 
 You can store data within `/opt/monero/data` or any directory within `/opt/monero`.
 
@@ -48,14 +54,16 @@ and use `/opt/monero/data` as your data dir inside the `monerod.conf`
 data-dir=/opt/monero/data
 ```
 
-### Sources
+## Sources
 
+```
 https://stackoverflow.com/questions/38882654/docker-entrypoint-running-bash-script-gets-permission-denied#comment82232384_38882798
 https://blog.turret.io/basic-supervisor-logging-with-docker/
+```
 
-### Ports
+## Ports
 
-`18080` is mainnet p2p port
-`18081` is mainnet rpc port
-`28080` is testnet p2p port
-`28081` is testnet rpc port
+- `18080` is mainnet p2p port
+- `18081` is mainnet rpc port
+- `28080` is testnet p2p port
+- `28081` is testnet rpc port
