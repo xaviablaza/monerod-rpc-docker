@@ -3,7 +3,9 @@ Dockerfile for running monerod and its rpc client in one Docker container
 
 ## Usage Instructions
 
-**Mandatory Requirement**: Must use a config file `monerod.conf`. You can mount a local volume if you'd like.
+**Mandatory Requirement**: Must use a config file `monerod.conf` and must also mount a local volume.
+
+Copy `monerod.conf` to `/opt/monero/monerod.conf`
 
 Make sure to configure `supervisord.conf` with the startup instructions you'd like for both `monerod` and the rpc client.
 
