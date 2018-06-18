@@ -21,7 +21,7 @@ sudo docker run -it --name=monerod-rpc-docker \
 -p 18081:18081 monerod-rpc-docker
 ```
 
-Upon running the container, `monerod` will begin syncing (downloading the blockchain). However, the RPC client will fail because it will not be able to find a wallet file to open. To mitigate this, do:
+Upon running the container, `monerod` will begin syncing (downloading the blockchain). However, the RPC client will fail because it will not be able to find a wallet file to open. To mitigate this, run this command *after monerod is finished syncing*:
 
 ```
 docker exec -it monero-rpc-docker ./monero-wallet-cli [--testnet]
