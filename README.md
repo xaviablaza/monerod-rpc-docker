@@ -1,71 +1,54 @@
-# monerod-rpc-docker
-Dockerfile for running monerod and its rpc client in one Docker container
+# moneropark
 
-## Usage Instructions
+These are a collection of Dockerfiles and scripts used to deploy `monerod` and
+`monero-rpc-wallet`.
 
-**Mandatory Requirement**: Must use a config file `monerod.conf` and must also mount a local volume.
+## Running the daemon and wallet separately
 
-Copy `monerod.conf` to `/opt/monero/monerod.conf`
-
-Make sure to configure `supervisord.conf` with the startup instructions you'd like for both `monerod` and the rpc client.
-
-Build the image:
-```
-docker build -t monerod-rpc-docker .
-```
-
-Run the container:
-```
-sudo docker run -it --name=monerod-rpc-docker \   
--v /opt/monero:/opt/monero \   
--p 18081:18081 monerod-rpc-docker
-```
-
-Upon running the container, `monerod` will begin syncing (downloading the blockchain). However, the RPC client will fail because it will not be able to find a wallet file to open. To mitigate this, run this command *after monerod is finished syncing*:
+Place the config file into the volume mounted for the config. You can also
+publish port 18081 if you want to expose the RPC server.
 
 ```
-docker exec -it monero-rpc-docker ./monero-wallet-cli [--testnet]
+# either run in foreground
+docker run -it -v /monero/chain:/root/.bitmonero -v /monero/wallet:/wallet -v /monero/config:/config -p 18080:18080 xaviablaza/monero:mainnet-daemon [--config-file /config/config.conf]
+
+docker run -it -v /monero/chain:/root/.bitmonero -v /monero/wallet:/wallet -v /monero/config:/config -p 18083:18083 xaviablaza/monero:mainnet-rpc-wallet [--config-file /config/config.conf]
+
+# or in background
+docker run -it -d -v /monero/chain:/root/.bitmonero -v /monero/wallet:/wallet -v /monero/config:/config -p 18080:18080 xaviablaza/monero:mainnet-daemon [--config-file /config/config.conf]
+
+docker run -it -d -v /monero/chain:/root/.bitmonero -v /monero/wallet:/wallet -v /monero/config:/config -p 18083:18083 xaviablaza/monero:mainnet-rpc-wallet [--config-file /config/config.conf]
 ```
 
-When creating the wallet file, you can specify a path to the wallet file (e.g. `/opt/monero/testnet-wallet`). This is why it is recommended to use a local volume so you may get the wallet file for use in other applications or secure it in an airgapped computer, etc.
+## Building the base image
 
-## Storing of Data
+You can use the base images available at:
+- [xaviablaza/monero:latest](https://hub.docker.com/r/xaviablaza/monero/tags/)
+- [xaviablaza/monero:v0.13.0.4](https://hub.docker.com/r/xaviablaza/monero/tags/)
 
-**Config file is read from**: `/opt/monero/monerod.conf`
+These images use v0.13.0.4-release (Beryillium Bullet), built from
+[source](https://github.com/monero-project/monero/releases/tag/v0.13.0.4).
 
-You can store data within `/opt/monero/data` or any directory within `/opt/monero`.
+## Building the image with supervisord
 
-This will inturn store your data within `/opt/monero` described above. 
+This image uses the base image above and adds supervisor to run both the daemon
+and the rpc wallet. You need to make sure that you have:
+- A strong username and password for the daemon and the rpc logins
+- Generate a wallet (you can mount a local volume to access the wallet files)
 
-Hence, to store within a different local dir, create a hard symlink for any other directory inside `/path/to/local/monero/dir` and then use that directory as `data-dir` in `monerod.conf`
+You can use the shell scripts to easily start the container.
 
-### Example
+## Protecting the environment variables
 
-If your host directory is `/usr/local/monero` and want to store data in `/var/monero`, do the following:
+You can use a config file and pass your configuration in via `--config-file /path/to/config` in
+either `monerod` or `monero-rpc-wallet`.
 
+## Donation
+
+If you want to donate directly to support further development, here is my
+wallet:
+
+xaviablaza:
 ```
-mkdir -p /usr/local/monero
-mkdir -p /var/monero
-ln -s /var/monero /usr/local/monero/data
+4BKmXgzLJueVgGxBgRjNpzbNUVwyLSQs5EMTy83AT2xHbS9k6zWu2rUJ1yfxbgnorAZFYjsKRfC9WYTBJtqrRSxZPQfmmJ1
 ```
-
-and use `/opt/monero/data` as your data dir inside the `monerod.conf`
-
-```
-#monerod.conf
-data-dir=/opt/monero/data
-```
-
-## Sources
-
-```
-https://stackoverflow.com/questions/38882654/docker-entrypoint-running-bash-script-gets-permission-denied#comment82232384_38882798
-https://blog.turret.io/basic-supervisor-logging-with-docker/
-```
-
-## Ports
-
-- `18080` is mainnet p2p port
-- `18081` is mainnet rpc port
-- `28080` is testnet p2p port
-- `28081` is testnet rpc port
