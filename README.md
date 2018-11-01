@@ -1,4 +1,4 @@
-# moneropark
+# monerod-rpc-docker
 
 These are a collection of Dockerfiles and scripts used to deploy `monerod` and
 `monero-rpc-wallet`.
