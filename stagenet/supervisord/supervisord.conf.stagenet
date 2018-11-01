@@ -1,0 +1,13 @@
+[supervisord]
+nodaemon=true
+logfile=/var/log/supervisor/supervisord.log
+childlogdir=/var/log/supervisor
+loglevel=debug
+
+[program:monerod]
+command=bash -c "/usr/local/bin/monerod --stagenet --p2p-bind-ip=0.0.0.0 --p2p-bind-port=38080 --rpc-bind-ip 0.0.0.0 --rpc-bind-port 38081 --rpc-login username:password --non-interactive --confirm-external-bind"
+redirect_stderr=true
+
+[program:rpc]
+command=bash -c "/usr/local/bin/monero-wallet-rpc --stagenet --rpc-bind-ip 0.0.0.0 --rpc-bind-port 38083 --confirm-external-bind --log-level 4 --rpc-login username:password --daemon-login username:password --wallet-file /wallet/change-wallet-name-here --password changeme"
+redirect_stderr=true
